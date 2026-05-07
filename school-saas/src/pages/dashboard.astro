@@ -15,7 +15,7 @@ let stats = {};
 let recentActivity = [];
 
 try {
-  const response = await fetch(`${import.meta.env.PUBLIC_API_URL}/api/me`, {
+  const response = await fetch(`${Astro.url.origin}/api/me`, {
     headers: {
       'Cookie': Astro.request.headers.get('cookie') || ''
     }
@@ -28,24 +28,18 @@ try {
   console.error('Error fetching user data:', error);
 }
 
-// Determine layout based on role
-let roleLayout;
-switch (user.role) {
-  case 'admin':
-    roleLayout = '../layouts/Admin.astro';
-    break;
-  case 'teacher':
-    roleLayout = '../layouts/Teacher.astro';
-    break;
-  case 'parent':
-    roleLayout = '../layouts/Parent.astro';
-    break;
-  default:
-    roleLayout = '../layouts/Base.astro';
-}
+import AdminLayout from '../layouts/Admin.astro';
+import TeacherLayout from '../layouts/Teacher.astro';
+import ParentLayout from '../layouts/Parent.astro';
 
-const LayoutComponent = await import(roleLayout);
-const RoleLayout = LayoutComponent.default;
+const layouts = {
+  admin: AdminLayout,
+  teacher: TeacherLayout,
+  parent: ParentLayout,
+  default: Layout
+};
+
+const RoleLayout = layouts[user.role as keyof typeof layouts] || layouts.default;
 ---
 
 <RoleLayout title={`Dashboard - ${user.first_name} ${user.last_name}`}>

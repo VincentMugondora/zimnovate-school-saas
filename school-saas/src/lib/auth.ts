@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import type { User } from './types';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key';
+const JWT_SECRET = import.meta.env.JWT_SECRET || process.env.JWT_SECRET || 'dev-secret-key';
 
 export function createJWT(user: User): string {
   return jwt.sign(

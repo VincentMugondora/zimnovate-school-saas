@@ -16,7 +16,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       data = {
         email: formData.get('email'),
         password: formData.get('password'),
-        action: formData.get('action')
+        action: formData.get('action'),
+        first_name: formData.get('first_name'),
+        last_name: formData.get('last_name'),
+        role: formData.get('role'),
+        school_id: formData.get('school_id')
       };
     }
     
@@ -47,7 +51,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 24 * 60 * 60 // 24 hours
+        maxAge: 24 * 60 * 60, // 24 hours
+        path: '/'
       });
 
       return new Response(JSON.stringify({ 
@@ -101,7 +106,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 24 * 60 * 60
+        maxAge: 24 * 60 * 60,
+        path: '/'
       });
 
       return new Response(JSON.stringify({ 
