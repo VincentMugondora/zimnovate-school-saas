@@ -65,8 +65,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         headers: { 'Content-Type': 'application/json' }
       });
     } else if (action === 'register') {
-      // Register
-      const { first_name, last_name, role, school_id } = await request.json();
+      // Register - data already parsed from request
+      const { first_name, last_name, role, school_id } = data;
       
       // Check if user already exists
       const existingUser = await getUser(email);
