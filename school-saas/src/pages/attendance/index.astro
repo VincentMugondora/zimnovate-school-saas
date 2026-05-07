@@ -23,8 +23,8 @@ let error = null;
 try {
   // Get classes (for teachers, only their classes)
   const classesUrl = user.role === 'teacher' 
-    ? `${import.meta.env.PUBLIC_API_URL}/api/classes?teacherId=${user.id}`
-    : `${import.meta.env.PUBLIC_API_URL}/api/classes`;
+    ? `${Astro.url.origin}/api/classes?teacherId=${user.id}`
+    : `${Astro.url.origin}/api/classes`;
   
   const classesResponse = await fetch(classesUrl, {
     headers: {
@@ -38,7 +38,7 @@ try {
   }
 
   // Get attendance data
-  const attendanceUrl = `${import.meta.env.PUBLIC_API_URL}/api/attendance?date=${date}${classId ? '&classId=' + classId : ''}`;
+  const attendanceUrl = `${Astro.url.origin}/api/attendance?date=${date}${classId ? '&classId=' + classId : ''}`;
   const attendanceResponse = await fetch(attendanceUrl, {
     headers: {
       'Cookie': Astro.request.headers.get('cookie') || ''
@@ -52,7 +52,7 @@ try {
 
   // Get students for the selected class
   if (classId) {
-    const studentsUrl = `${import.meta.env.PUBLIC_API_URL}/api/students`;
+    const studentsUrl = `${Astro.url.origin}/api/students`;
     const studentsResponse = await fetch(studentsUrl, {
       headers: {
         'Cookie': Astro.request.headers.get('cookie') || ''
@@ -70,24 +70,18 @@ try {
   error = 'Error loading attendance data';
 }
 
-// Determine layout based on role
-let roleLayout;
-switch (user.role) {
-  case 'admin':
-    roleLayout = '../../layouts/Admin.astro';
-    break;
-  case 'teacher':
-    roleLayout = '../../layouts/Teacher.astro';
-    break;
-  case 'parent':
-    roleLayout = '../../layouts/Parent.astro';
-    break;
-  default:
-    roleLayout = '../../layouts/Base.astro';
-}
+import AdminLayout from '../../layouts/Admin.astro';
+import TeacherLayout from '../../layouts/Teacher.astro';
+import ParentLayout from '../../layouts/Parent.astro';
 
-const LayoutComponent = await import(roleLayout);
-const RoleLayout = LayoutComponent.default;
+const layouts = {
+  admin: AdminLayout,
+  teacher: TeacherLayout,
+  parent: ParentLayout,
+  default: Layout
+};
+
+const RoleLayout = layouts[user.role as keyof typeof layouts] || layouts.default;
 ---
 
 <RoleLayout title="Attendance - School Management System">
