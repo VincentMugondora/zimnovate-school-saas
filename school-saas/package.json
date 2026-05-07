@@ -1,0 +1,38 @@
+{
+  "name": "school-saas",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/node": "^8.3.4",
+    "@astrojs/tailwind": "^5.1.5",
+    "@supabase/supabase-js": "^2.105.3",
+    "astro": "^4.16.19",
+    "astro-htmx": "^1.0.6",
+    "axios": "^1.16.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.6.1",
+    "jsonwebtoken": "^9.0.3",
+    "rxdb": "^15.39.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20.19.39",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.14",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "School Management SaaS"
+}

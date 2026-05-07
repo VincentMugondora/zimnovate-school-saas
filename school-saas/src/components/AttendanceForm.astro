@@ -1,0 +1,165 @@
+---
+export interface Props {
+	classId: string;
+	date: string;
+	students: Array<{
+		id: string;
+		first_name: string;
+		last_name: string;
+		current_status?: string;
+	}>;
+}
+
+const { classId, date, students } = Astro.props;
+---
+
+<div class="bg-white rounded-lg shadow-md p-6">
+	<div class="flex justify-between items-center mb-6">
+		<h3 class="text-lg font-semibold text-gray-900">
+			Attendance - {new Date(date).toLocaleDateString()}
+		</h3>
+		<div class="flex items-center space-x-2">
+			<div id="sync-status" class="w-2 h-2 bg-green-500 rounded-full" title="All changes saved"></div>
+			<span class="text-sm text-gray-500">Auto-save enabled</span>
+		</div>
+	</div>
+
+	<form 
+		id="attendance-form"
+		hx-post="/api/attendance"
+		hx-trigger="change from:input[name='status']"
+		hx-target="#save-status"
+		hx-swap="innerHTML"
+		class="space-y-4"
+	>
+		<input type="hidden" name="class_id" value={classId} />
+		<input type="hidden" name="date" value={date} />
+		
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+			{students.map((student) => (
+				<div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+					<div class="flex items-center justify-between mb-3">
+						<div>
+							<h4 class="font-medium text-gray-900">
+								{student.first_name} {student.last_name}
+							</h4>
+							<p class="text-sm text-gray-500">ID: {student.id}</p>
+						</div>
+						<input 
+							type="hidden" 
+							name="student_id" 
+							value={student.id}
+						/>
+					</div>
+					
+					<div class="space-y-2">
+						<label class="text-sm font-medium text-gray-700">Status:</label>
+						<div class="grid grid-cols-2 gap-2">
+							{['present', 'absent', 'late', 'excused'].map((status) => (
+								<label class="relative">
+									<input 
+										type="radio" 
+										name={`status_${student.id}`}
+										value={status}
+										checked={student.current_status === status}
+										class="peer sr-only"
+										hx-post="/api/attendance"
+										hx-include="this"
+										hx-target="#save-status"
+										hx-swap="innerHTML"
+									/>
+									<div class={`
+										px-3 py-2 text-xs font-medium rounded-md cursor-pointer text-center transition-all
+										${status === 'present' ? 'peer-checked:bg-green-100 peer-checked:text-green-800 hover:bg-green-50' : ''}
+										${status === 'absent' ? 'peer-checked:bg-red-100 peer-checked:text-red-800 hover:bg-red-50' : ''}
+										${status === 'late' ? 'peer-checked:bg-yellow-100 peer-checked:text-yellow-800 hover:bg-yellow-50' : ''}
+										${status === 'excused' ? 'peer-checked:bg-blue-100 peer-checked:text-blue-800 hover:bg-blue-50' : ''}
+										${student.current_status !== status ? 'bg-gray-100 text-gray-600' : ''}
+									`}>
+										{status.charAt(0).toUpperCase() + status.slice(1)}
+									</div>
+								</label>
+							))}
+						</div>
+					</div>
+				</div>
+			))}
+		</div>
+		
+		<div class="mt-6 flex justify-between items-center">
+			<div id="save-status" class="text-sm text-gray-500">
+				Ready to save changes
+			</div>
+			
+			<div class="flex space-x-3">
+				<button 
+					type="button"
+					hx-get="/api/attendance"
+					hx-target="#attendance-form"
+					hx-include="input[name='class_id'], input[name='date']"
+					class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+				>
+					Reset
+				</button>
+				<button 
+					type="submit"
+					class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors"
+				>
+					Save All Changes
+				</button>
+			</div>
+		</div>
+	</form>
+</div>
+
+<script>
+	// Handle individual status changes
+	document.addEventListener('change', function(e) {
+		if (e.target.type === 'radio' && e.target.name.startsWith('status_')) {
+			const studentId = e.target.name.replace('status_', '');
+			const status = e.target.value;
+			const classId = document.querySelector('input[name="class_id"]').value;
+			const date = document.querySelector('input[name="date"]').value;
+			
+			// Send individual update
+			fetch('/api/attendance', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					student_id: studentId,
+					class_id: classId,
+					date: date,
+					status: status
+				})
+			})
+			.then(response => response.json())
+			.then(data => {
+				const statusEl = document.getElementById('save-status');
+				if (data.error) {
+					statusEl.textContent = 'Error: ' + data.error;
+					statusEl.className = 'text-sm text-red-600';
+				} else {
+					statusEl.textContent = 'Saved: ' + new Date().toLocaleTimeString();
+					statusEl.className = 'text-sm text-green-600';
+					
+					// Update sync status
+					const syncIndicator = document.getElementById('sync-status');
+					syncIndicator.className = 'w-2 h-2 bg-green-500 rounded-full';
+					
+					setTimeout(() => {
+						statusEl.textContent = 'All changes saved';
+						statusEl.className = 'text-sm text-gray-500';
+					}, 3000);
+				}
+			})
+			.catch(error => {
+				console.error('Error:', error);
+				const statusEl = document.getElementById('save-status');
+				statusEl.textContent = 'Error saving attendance';
+				statusEl.className = 'text-sm text-red-600';
+			});
+		}
+	});
+</script>

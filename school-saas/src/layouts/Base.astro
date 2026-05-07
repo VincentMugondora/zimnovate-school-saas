@@ -1,0 +1,63 @@
+---
+export interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="description" content="School Management SaaS" />
+	<meta name="viewport" content="width=device-width" />
+	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	<meta name="generator" content={Astro.generator} />
+	<title>{title}</title>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+	<div id="app">
+		<slot />
+	</div>
+	
+	<!-- HTMX -->
+	<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+	
+	<!-- RxDB and sync functionality -->
+	<script>
+		// Initialize sync status indicator
+		let syncStatus = 'online';
+		let syncInterval;
+		
+		function updateSyncStatus(status) {
+			syncStatus = status;
+			const indicator = document.getElementById('sync-status');
+			if (indicator) {
+				indicator.className = status === 'online' 
+					? 'w-2 h-2 bg-green-500 rounded-full' 
+					: 'w-2 h-2 bg-yellow-500 rounded-full';
+				indicator.title = status === 'online' ? 'Synced' : 'Offline - changes will sync when online';
+			}
+		}
+		
+		// Monitor online/offline status
+		window.addEventListener('online', () => {
+			updateSyncStatus('online');
+			if (typeof startSync === 'function') {
+				startSync();
+			}
+		});
+		
+		window.addEventListener('offline', () => {
+			updateSyncStatus('offline');
+			if (syncInterval) {
+				clearInterval(syncInterval);
+			}
+		});
+		
+		// Initial status
+		updateSyncStatus(navigator.onLine ? 'online' : 'offline');
+	</script>
+</body>
+</html>

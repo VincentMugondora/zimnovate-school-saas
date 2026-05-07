@@ -1,0 +1,93 @@
+School Management SaaS
+Product Requirements Document (PRD)
+Zimnovate—Harare, Zimbabwe
+1. Overview
+This product is a comprehensive, offline-first school management SaaS built for African schools operating in low-bandwidth environments. It enables administrators, teachers, and parents to manage student enrollment, attendance, grades, and parent communication in real-time, with full offline functionality.
+2. Product Goals
+•Enable complete school operations digitally across three user types (admin, teacher, parent)
+•Optimize for low-bandwidth: fast first page load (<3s on 3G), minimal JS, server-side rendering
+•Support offline-first: students and teachers can work without internet, sync when reconnected
+•Provide real-time collaboration: grades, attendance, and reports sync instantly when online
+3. User Types & Personas
+3.1 School Administrator
+•Manages school settings, user accounts, and overall dashboard
+•Can view analytics: enrollment trends, attendance rates, grade distributions
+•Can create teacher and parent accounts, manage school calendar
+3.2 Teacher
+•Manages own classes, attendance, grades, and lesson planning
+•Can mark attendance quickly (tap to mark present/absent)
+•Can enter grades individually or bulk-import
+3.3 Parent & Student
+•View child's/own attendance and grades in real-time
+•Receive notifications of missing assignments or poor attendance
+4. Core Features
+4.1 Student Management
+•Enrollment: Add/edit students with basic info (name, email, grade level)
+•Class assignment: Assign students to classes
+•Search & filter: Quick lookup by name, grade, or class
+4.2 Attendance Tracking
+•Quick mark: Tap to toggle Present/Absent/Late/Excused
+•Offline support: Mark attendance offline, sync when online
+•Bulk entry: CSV import for bulk attendance
+•Reports: Attendance rates by student, class, or date range
+4.3 Grade Management
+•Entry: Teachers enter grades by class and assessment
+•Grading periods: Organize by term/semester
+•Parent view: Parents see grades in real-time
+•PDF reports: Generate and export grade reports
+4.4 Parent Communication
+•Notifications: Alert parents to grades, attendance, assignments
+•Portal: One-click access to child's progress
+•Report cards: Auto-generate and email to parents
+4.5 Offline & Sync
+•RxDB local database: All data cached locally
+•Transparent sync: Changes push/pull automatically when online
+•Conflict resolution: Last-write-wins with timestamps
+5. Technical Stack
+•Frontend: Astro (SSR) + HTMX (dynamic updates)
+•Offline: RxDB (IndexedDB-backed, real-time sync)
+•Backend: Node.js/Express (optional, for caching/advanced logic)
+•Database: Supabase (PostgreSQL)
+•Deployment: Vercel or Netlify
+6. Success Metrics
+1.First page load: <3 seconds on 3G
+2.Offline uptime: 100% data access when offline
+3.Sync latency: <5 seconds (P95) when online
+4.User adoption: 80% of teachers using attendance module within 2 weeks
+5.Data accuracy: 99%+ correctness in synced records
+7. Out of Scope (Phase 2+)
+•WhatsApp integration for notifications (Phase 2)
+•SMS alerts for low connectivity (Phase 2)
+•Advanced analytics (student performance trends)
+•Lesson planning & curriculum management
+8. Roadmap
+Phase 1 (MVP): Weeks 1–4
+•Auth + role-based access
+•Student CRUD
+•Attendance form + RxDB sync
+•Basic dashboard by role
+Phase 2 (Expansion): Weeks 5–8
+•Grade entry + reports
+•Parent portal
+•Email notifications
+Phase 3 (Polish): Weeks 9+
+•Performance optimization
+•Advanced analytics
+•WhatsApp/SMS integration
+9. Assumptions & Constraints
+Assumptions
+•Schools have at least basic internet connectivity (even if intermittent)
+•One admin user per school
+•Teachers and parents have mobile devices with browsers
+Constraints
+•Low-bandwidth environment: must optimize asset sizes
+•No app store requirement: web-first, PWA-capable
+•Privacy: all data must be encrypted at rest and in transit
+10. Glossary
+Astro	Static site generator with server-side rendering (SSR) for fast, minimal-JavaScript pages
+HTMX	Library for dynamic HTML updates without writing JavaScript
+RxDB	Offline-first JavaScript database with real-time sync capabilities
+Supabase	PostgreSQL database with built-in real-time API and authentication
+SSR	Server-side rendering: generating HTML on server before sending to client
+IndexedDB	Browser local storage for structured data
+Sync	Process of pushing local changes to server and pulling remote changes to local DB

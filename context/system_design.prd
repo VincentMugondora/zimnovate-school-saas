@@ -1,0 +1,199 @@
+You are an expert full-stack engineer building a comprehensive school management SaaS using:
+- Frontend: Astro + HTMX (server-rendered, minimal JS, fast)
+- Database: Supabase (PostgreSQL)
+- Sync: RxDB (offline-first, real-time sync)
+- Backend: Node.js/Express (optional, for advanced caching/logic)
+- Deployment: Vercel or Netlify
+
+CONTEXT:
+This is a complete school management system serving three user types:
+1. Administrators: manage school settings, users, overall dashboard
+2. Teachers: manage classes, attendance, grades, lesson plans
+3. Parents & Students: view grades, attendance, reports, progress
+
+REQUIREMENTS:
+- Offline-first: RxDB syncs with Supabase when online
+- Low-bandwidth optimized: Minimal assets, SSR for fast FCP
+- Multi-tenant: Each school is isolated (tenantId field)
+- Real-time: Changes sync across devices instantly when online
+- Accessible: WCAG 2.1 AA compliant
+
+PROJECT STRUCTURE:
+```
+school-saas/
+├── src/
+│   ├── components/          # Reusable Astro/HTMX components
+│   │   ├── Nav.astro
+│   │   ├── StudentCard.astro
+│   │   ├── GradeForm.astro
+│   │   └── ...
+│   ├── layouts/
+│   │   ├── Admin.astro
+│   │   ├── Teacher.astro
+│   │   ├── Parent.astro
+│   │   └── Base.astro
+│   ├── pages/
+│   │   ├── index.astro       # Login/landing
+│   │   ├── dashboard.astro   # Role-based dashboard
+│   │   ├── students/
+│   │   │   ├── [id].astro
+│   │   │   └── index.astro
+│   │   ├── attendance/
+│   │   ├── grades/
+│   │   └── api/
+│   │       ├── auth.ts       # Auth endpoints
+│   │       ├── sync.ts       # RxDB sync webhook
+│   │       ├── students.ts
+│   │       ├── attendance.ts
+│   │       └── grades.ts
+│   ├── lib/
+│   │   ├── db.ts             # Supabase client
+│   │   ├── rxdb.ts           # RxDB setup, schemas
+│   │   ├── auth.ts           # Auth helper (JWT)
+│   │   └── constants.ts      # Enums, types
+│   └── styles/
+│       └── globals.css       # Minimal, utility-first
+├── public/
+├── astro.config.mjs
+├── tailwind.config.mjs       # Minimal Tailwind
+└── package.json
+```
+
+IMPLEMENTATION STEPS:
+
+1. SETUP PHASE
+   a. Initialize Astro project: `npm create astro@latest`
+   b. Install dependencies: astro-htmx, supabase, rxdb, typescript
+   c. Create Supabase project and tables (see DATABASE SCHEMA below)
+   d. Set up environment variables (.env)
+
+2. DATABASE SCHEMA
+   Create these tables in Supabase:
+   
+   -- Schools (multi-tenant)
+   CREATE TABLE schools (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     name TEXT NOT NULL,
+     created_at TIMESTAMP DEFAULT now()
+   );
+
+   -- Users (admin, teacher, parent)
+   CREATE TABLE users (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     school_id UUID REFERENCES schools(id),
+     email TEXT NOT NULL UNIQUE,
+     password_hash TEXT,
+     role TEXT CHECK (role IN ('admin', 'teacher', 'parent')) NOT NULL,
+     first_name TEXT, last_name TEXT,
+     created_at TIMESTAMP DEFAULT now(),
+     updated_at TIMESTAMP DEFAULT now()
+   );
+
+   -- Students
+   CREATE TABLE students (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     school_id UUID REFERENCES schools(id),
+     first_name TEXT NOT NULL,
+     last_name TEXT NOT NULL,
+     email TEXT,
+     enrollment_date DATE,
+     grade_level INT,
+     created_at TIMESTAMP DEFAULT now(),
+     updated_at TIMESTAMP DEFAULT now()
+   );
+
+   -- Classes
+   CREATE TABLE classes (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     school_id UUID REFERENCES schools(id),
+     teacher_id UUID REFERENCES users(id),
+     name TEXT NOT NULL,
+     subject TEXT,
+     grade_level INT,
+     created_at TIMESTAMP DEFAULT now()
+   );
+
+   -- Attendance
+   CREATE TABLE attendance (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     school_id UUID REFERENCES schools(id),
+     student_id UUID REFERENCES students(id),
+     class_id UUID REFERENCES classes(id),
+     date DATE NOT NULL,
+     status TEXT CHECK (status IN ('present', 'absent', 'late', 'excused')) NOT NULL,
+     created_at TIMESTAMP DEFAULT now()
+   );
+
+   -- Grades
+   CREATE TABLE grades (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     school_id UUID REFERENCES schools(id),
+     student_id UUID REFERENCES students(id),
+     class_id UUID REFERENCES classes(id),
+     grade DECIMAL(5,2) NOT NULL,
+     grading_period TEXT,
+     created_at TIMESTAMP DEFAULT now(),
+     updated_at TIMESTAMP DEFAULT now()
+   );
+
+   CREATE INDEX idx_school_id ON students(school_id);
+   CREATE INDEX idx_school_id ON users(school_id);
+   CREATE INDEX idx_student_id ON attendance(student_id);
+
+3. RxDB SETUP
+   a. Create RxDB database instance with offline-first sync
+   b. Define schemas matching Supabase tables
+   c. Set up replication plugin to sync with Supabase API
+   d. Persist to IndexedDB (browser) + localStorage fallback
+
+4. AUTH LAYER
+   a. Login page (email/password)
+   b. JWT token storage in secure httpOnly cookie (server-side)
+   c. Role-based access control (RBAC) middleware
+   d. Logout functionality
+
+5. FRONTEND COMPONENTS
+   a. Dashboard: role-specific views (admin sees all, teacher sees their classes, parent sees their child)
+   b. Student list: searchable, paginated (HTMX for filtering)
+   c. Attendance form: quick mark/update with HTMX auto-save
+   d. Grade entry: table view, inline edit with HTMX
+   e. Reports: PDF export for parents (via server-side generation)
+
+6. API ENDPOINTS (in src/pages/api/)
+   - POST /api/auth/login
+   - POST /api/auth/logout
+   - GET /api/students?school_id=X
+   - POST /api/attendance (create/update)
+   - GET /api/grades?student_id=X
+   - POST /api/sync (RxDB pull replication)
+   - GET /api/sync (RxDB push replication)
+
+7. OFFLINE SYNC STRATEGY
+   a. RxDB watches for changes locally
+   b. When online, POST to /api/sync to push changes
+   c. GET /api/sync periodically to pull remote changes
+   c. Conflict resolution: last-write-wins (with timestamps)
+
+NICE-TO-HAVES:
+- Email notifications for grades/attendance (SendGrid)
+- Parent portal: view child's progress in real-time
+- Mobile-responsive dashboard
+- Dark mode toggle
+- Bulk CSV import for students/grades
+- Analytics: attendance trends, grade distribution
+
+IMPORTANT NOTES:
+- Keep JS minimal: use HTMX for interactivity, Astro for SSR
+- Optimize for low bandwidth: compress assets, lazy-load images
+- Test offline mode: disable network in DevTools, verify RxDB works
+- Security: sanitize inputs, validate on server, use prepared statements
+- Performance: measure Core Web Vitals, aim for <3s FCP on 3G
+
+START WITH:
+1. Set up Astro project with Supabase credentials
+2. Create all Supabase tables (run SQL in Dashboard)
+3. Build login page + auth middleware
+4. Create student dashboard (read-only first)
+5. Add attendance form (HTMX + RxDB sync)
+6. Then expand: grades, parent portal, reports
+

@@ -1,0 +1,20 @@
+---
+export interface Props {
+	requiredRole: 'admin' | 'teacher' | 'parent' | 'any';
+	userRole: 'admin' | 'teacher' | 'parent';
+	children: any;
+	fallbackContent?: any;
+}
+
+const { requiredRole, userRole, children, fallbackContent } = Astro.props;
+
+// Check if user has access
+function hasAccess(required: string, current: string): boolean {
+	if (required === 'any') return true;
+	return required === current;
+}
+
+const canAccess = hasAccess(requiredRole, userRole);
+---
+
+{canAccess ? children : fallbackContent}

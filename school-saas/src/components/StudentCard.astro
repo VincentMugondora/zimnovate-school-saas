@@ -1,0 +1,71 @@
+---
+export interface Props {
+	student: {
+		id: string;
+		first_name: string;
+		last_name: string;
+		email?: string;
+		grade_level: number;
+		enrollment_date: string;
+	};
+	showActions?: boolean;
+}
+
+const { student, showActions = true } = Astro.props;
+---
+
+<div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200">
+	<div class="flex items-start justify-between">
+		<div class="flex-1">
+			<div class="flex items-center space-x-3 mb-2">
+				<div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+					<span class="text-blue-600 font-semibold text-lg">
+						{student.first_name.charAt(0)}{student.last_name.charAt(0)}
+					</span>
+				</div>
+				<div>
+					<h3 class="text-lg font-semibold text-gray-900">
+						{student.first_name} {student.last_name}
+					</h3>
+					<p class="text-sm text-gray-500">Grade {student.grade_level}</p>
+				</div>
+			</div>
+			
+			<div class="space-y-1 text-sm text-gray-600">
+				{student.email && (
+					<p class="flex items-center">
+						<svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+						</svg>
+						{student.email}
+					</p>
+				)}
+				<p class="flex items-center">
+					<svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+					</svg>
+					Enrolled: {new Date(student.enrollment_date).toLocaleDateString()}
+				</p>
+			</div>
+		</div>
+		
+		{showActions && (
+			<div class="flex flex-col space-y-2 ml-4">
+				<a 
+					href={`/students/${student.id}`}
+					class="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+				>
+					View Details
+				</a>
+				<button 
+					class="text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors"
+					hx-get={`/students/${student.id}/edit`}
+					hx-target="#modal-content"
+					hx-trigger="click"
+				>
+					Edit
+				</button>
+			</div>
+		)}
+	</div>
+</div>
