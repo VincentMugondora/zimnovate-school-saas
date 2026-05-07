@@ -1,0 +1,115 @@
+School Management SaaS
+Context & Implementation Document
+For Development Team
+1. Project Background
+This project builds a comprehensive school management system for African schools (primary focus: Zimbabwe) operating in low-to-moderate bandwidth environments. The system must support three primary user roles (admin, teacher, parent) and provide offline-first functionality using RxDB for local persistence with automatic sync to Supabase PostgreSQL.
+Key differentiators:
+•Offline-first: Work without internet, sync when reconnected
+•Low-bandwidth optimized: Server-rendered with minimal JavaScript
+•Multi-tenant: Isolate data by school
+2. Technology Stack & Why
+Frontend: Astro + HTMX
+Why not Next.js or Gatsby?
+•Astro ships zero JavaScript by default (not even React hydration)
+•HTMX adds interactivity via HTML attributes, not JavaScript bundles
+•Result: Minimal first-page load, fast on 3G, works offline better
+Next.js requires more JS for hydration + client-side interactivity, heavier for low-bandwidth.
+Database: Supabase PostgreSQL
+•Managed PostgreSQL with real-time API
+•Built-in row-level security (RLS) for multi-tenancy
+•Simple REST/GraphQL API, integrates cleanly with RxDB replication
+Offline: RxDB
+•Local IndexedDB persistence in the browser
+•Real-time replication with conflict resolution
+•Automatic push/pull sync when online
+Alternative considered: Firebase—but Supabase offers better control over data and lower latency in Africa.
+3. Project Structure
+Recommended directory layout:
+•src/components/—Reusable Astro components (StudentCard, GradeForm, AttendanceForm)
+•src/layouts/—Role-based layout wrappers (Admin.astro, Teacher.astro, Parent.astro)
+•src/pages/—Page routes (index, dashboard, students/[id], attendance, grades, etc.)
+•src/pages/api/—API endpoints (auth, sync, CRUD endpoints)
+•src/lib/—Shared utilities (db.ts, rxdb.ts, auth.ts, constants.ts)
+•src/styles/—Global CSS (minimal, utility-first with Tailwind)
+4. Database Schema
+Core tables (all have school_id for multi-tenancy):
+schools	id (PK), name, created_at
+users	id (PK), school_id (FK), email, password_hash, role (admin|teacher|parent), first_name, last_name, created_at, updated_at
+students	id (PK), school_id (FK), first_name, last_name, email, enrollment_date, grade_level, created_at, updated_at
+classes	id (PK), school_id (FK), teacher_id (FK→users), name, subject, grade_level, created_at
+attendance	id (PK), school_id (FK), student_id (FK), class_id (FK), date, status (present|absent|late|excused), created_at
+grades	id (PK), school_id (FK), student_id (FK), class_id (FK), grade (decimal), grading_period, created_at, updated_at
+
+5. Authentication & Authorization
+Auth Flow
+•User logs in via email/password
+•Server validates credentials against users table
+•Returns JWT token (stored in httpOnly secure cookie)
+•Subsequent requests include JWT in cookie; server validates before responding
+Role-Based Access Control (RBAC)
+•Admin: Full access to school settings, all user accounts
+•Teacher: Can view/edit own classes, mark attendance, enter grades
+•Parent: Read-only access to child's grades and attendance
+6. RxDB Offline & Sync Strategy
+Local First
+•All reads come from RxDB (IndexedDB) by default
+•Writes go to local RxDB immediately
+•No waiting for server round-trip = instant feedback
+Sync Protocol
+•Push: When online, POST local changes to /api/sync
+•Pull: Periodically GET /api/sync to fetch remote changes
+•Conflict resolution: Last-write-wins (compare updated_at timestamps)
+Automatic: RxDB handles all sync logic transparently
+7. API Endpoints (src/pages/api/)
+POST	/api/auth/login	Authenticate user, return JWT
+POST	/api/auth/logout	Invalidate JWT
+GET	/api/students	List students (filtered by school_id)
+POST	/api/students	Create new student
+GET	/api/students/[id]	Get student details
+PUT	/api/students/[id]	Update student
+POST	/api/attendance	Create/update attendance record
+GET	/api/grades	List grades (filtered by student_id)
+POST	/api/grades	Create/update grade
+POST	/api/sync	RxDB push replication (receive changes)
+GET	/api/sync	RxDB pull replication (send changes)
+
+8. Implementation Priorities
+Sprint 1 (Weeks 1–2): Foundation
+•Set up Astro project with Supabase credentials
+•Create all PostgreSQL tables
+•Build login page + JWT auth middleware
+•Set up RxDB with basic schemas
+Sprint 2 (Weeks 3–4): MVP Features
+•Student CRUD (add, edit, list, search)
+•Attendance form + HTMX auto-save
+•RxDB → Supabase sync for attendance
+•Role-based dashboards (admin, teacher, parent read-only)
+Sprint 3+ (Weeks 5+): Expansion
+•Grade entry form + reports
+•Parent notifications
+•Performance optimization
+9. Common Gotchas & Debugging Tips
+RxDB Replication
+•Schema mismatch: RxDB schema must match Supabase table schema (types, required fields, etc.)
+•Conflict resolution: If push/pull happens simultaneously, last-write-wins may lose updates. Add optimistic locking if needed
+•Offline detection: Use navigator.onLine to show sync status in UI
+HTMX & Astro
+•HTML attributes only: HTMX replaces HTML fragments, not JSON. Return HTML from endpoints
+•No client state: Each fragment is independent. Use data attributes to pass state
+•Forms: HTMX serializes form data; validate on server
+Performance
+•Measure FCP (First Contentful Paint): Goal <3s on 3G. Use Chrome DevTools throttling
+•Lazy load images: Use native lazy loading or Intersection Observer
+•Minimize CSS: Use utility classes, avoid unused styles
+10. Pre-Launch Checklist
+•Security: Enable RLS on Supabase; validate JWT on every API call
+•Testing: Offline mode (disable network in DevTools); verify sync works
+•Performance: Measure Core Web Vitals; optimize images
+•Accessibility: Test keyboard navigation, screen reader compatibility
+•Monitoring: Set up error tracking (Sentry), analytics (Vercel)
+11. Resources & Links
+•Astro Docs: https://docs.astro.build
+•HTMX Docs: https://htmx.org
+•RxDB Docs: https://rxdb.info
+•Supabase Docs: https://supabase.com/docs
+•Tailwind CSS: https://tailwindcss.com

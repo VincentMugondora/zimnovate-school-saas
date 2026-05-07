@@ -1,0 +1,150 @@
+School Management SaaS
+Windsurf/Claude Code Prompt
+Copy and paste this entire section into Windsurf to begin development
+How to Use This Prompt
+1.Open Windsurf or Claude Code
+2.Paste the ENTIRE prompt text below (starting from 'WINDSURF PROMPT' section)
+3.Windsurf will set up the project structure, install dependencies, and begin initial coding
+4.Follow the step-by-step instructions in the prompt
+
+WINDSURF PROMPT
+Copy everything from here down and paste into Windsurf
+---
+You are an expert full-stack engineer building a comprehensive school management SaaS using:
+•Frontend: Astro (SSR) + HTMX (dynamic updates, minimal JS)
+•Offline: RxDB (IndexedDB-backed, automatic sync with Supabase)
+•Backend: Node.js/Express (optional, for caching/complex logic)
+•Database: Supabase PostgreSQL (real-time, RLS for multi-tenancy)
+•Deployment: Vercel or Netlify
+CONTEXT:
+This is a complete school management system for African schools (Zimbabwe focus) operating in low-bandwidth environments. It must support three user types: Administrators, Teachers, and Parents/Students. All data is cached locally with RxDB and syncs automatically to Supabase when online.
+REQUIREMENTS:
+•Offline-first: RxDB stores all data locally in IndexedDB. Users can work offline; changes sync when online
+•Low-bandwidth optimized: Astro renders on server (minimal JS bundle), HTMX for interactivity
+•Multi-tenant: Each school is isolated by school_id; Row-Level Security (RLS) enforces access
+•Real-time sync: When online, changes push to Supabase and pull remote changes
+•Accessible: WCAG 2.1 AA compliant (semantic HTML, keyboard nav, screen reader support)
+PROJECT STRUCTURE:
+school-saas/
+├── src/
+│   ├── components/          # Reusable Astro/HTMX components
+│   │   ├── Nav.astro
+│   │   ├── StudentCard.astro
+│   │   ├── AttendanceForm.astro
+│   │   ├── GradeForm.astro
+│   │   └── ...
+│   ├── layouts/             # Role-based layouts
+│   │   ├── Admin.astro
+│   │   ├── Teacher.astro
+│   │   ├── Parent.astro
+│   │   └── Base.astro
+│   ├── pages/              # Page routes
+│   │   ├── index.astro      # Login/landing
+│   │   ├── dashboard.astro  # Role-based dashboard
+│   │   ├── students/
+│   │   │   ├── [id].astro
+│   │   │   └── index.astro
+│   │   ├── attendance/
+│   │   ├── grades/
+│   │   └── api/            # API endpoints
+│   │       ├── auth.ts
+│   │       ├── sync.ts     # RxDB sync
+│   │       ├── students.ts
+│   │       ├── attendance.ts
+│   │       └── grades.ts
+│   ├── lib/               # Utilities
+│   │   ├── db.ts          # Supabase client
+│   │   ├── rxdb.ts        # RxDB setup, schemas
+│   │   ├── auth.ts        # JWT helpers
+│   │   └── constants.ts   # Enums, types
+│   └── styles/
+│       └── globals.css    # Minimal CSS
+├── public/
+├── astro.config.mjs
+├── tailwind.config.mjs
+└── package.json
+IMPLEMENTATION STEPS:
+STEP 1: Project Setup
+5.Initialize Astro project: npm create astro@latest school-saas
+6.Install core dependencies:
+npm install astro-htmx supabase rxdb axios dotenv
+7.Install dev dependencies:
+8.npm install -D tailwindcss postcss autoprefixer typescript
+STEP 2: Environment Setup
+9.Create .env.local file with:
+PUBLIC_SUPABASE_URL=your_supabase_url
+PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+STEP 3: Supabase Setup
+10.Create Supabase project at supabase.com
+11.Run the SQL schema (provided in Context Document, section 4)
+12.Enable Row-Level Security (RLS) on all tables
+STEP 4: Authentication
+13.Create src/pages/index.astro (login form)
+14.Create src/pages/api/auth.ts (POST /api/auth for login, logout)
+15.Use JWT in httpOnly cookies for security
+16.Create src/lib/auth.ts with middleware to validate JWT on every request
+STEP 5: RxDB Setup
+17.Create src/lib/rxdb.ts:
+• Initialize RxDB with IndexedDB adapter
+• Define schemas for students, attendance, grades (match Supabase tables)
+• Set up replication plugin for automatic push/pull sync
+18.Test offline mode: Disable network in DevTools, verify data persists
+STEP 6: Dashboard
+19.Create src/pages/dashboard.astro with role-based views
+20.Admin: Overview, user management, analytics
+21.Teacher: Classes, attendance, grades
+22.Parent: Child's grades, attendance (read-only)
+STEP 7: Core Features (MVP)
+23.Student management: CRUD in src/pages/students/
+24.Attendance form: src/pages/attendance/ (HTMX + RxDB auto-save)
+25.Grade entry: src/pages/grades/ (basic table, inline edit)
+26.API endpoints: src/pages/api/ for CRUD + sync
+KEY FEATURES TO IMPLEMENT:
+1. Offline-First RxDB
+•All reads query RxDB first
+•All writes update RxDB immediately (UI updates instantly)
+•Background sync: POST changes to /api/sync when online
+•Periodic pull: GET /api/sync to fetch remote changes
+2. Attendance Tracking
+•Quick mark form: Tap to toggle Present/Absent/Late/Excused
+•HTMX hx-post to auto-save without refresh
+•Works offline: Updates stored in RxDB, syncs when online
+•Reports: Attendance rate by student/class/date
+3. Parent & Student Portal
+•Read-only view of grades and attendance
+•Real-time updates (via sync)
+•PDF export for report cards
+PERFORMANCE TARGETS:
+•First Contentful Paint (FCP): <3 seconds on 3G
+•Sync latency: <5 seconds (P95) when online
+•Offline uptime: 100% (all data cached locally)
+•Bundle size: <200KB gzipped (excluding assets)
+TESTING CHECKLIST:
+27.Offline mode: Disable network, verify attendance/grades work
+28.Sync: Go offline, make changes, go online, verify sync
+29.Performance: Measure FCP on 3G (DevTools throttling)
+30.Security: Verify JWT validation, RLS enforces tenancy
+31.Accessibility: Test keyboard nav, screen reader
+IMPORTANT NOTES:
+•Keep JS minimal: Use HTMX for interactivity, Astro for SSR
+•RxDB schema must match Supabase table schema (types, required fields)
+•Use data-attributes to pass state between HTMX fragments
+•Always validate on server: Don't trust client-side validation
+•Conflict resolution: Last-write-wins (compare updated_at timestamps)
+DEBUGGING HELP:
+•RxDB replication not syncing? Check schema match and API endpoint response
+•HTMX form not posting? Verify hx-post target, check server response
+•Offline broken? Open DevTools → Application → IndexedDB to inspect RxDB
+•Performance slow? Check Chrome DevTools Network tab; optimize images/CSS
+START NOW: Follow STEP 1 to initialize the project, then message me for help on any step.
+
+Notes
+This prompt is designed to be pasted directly into Windsurf or Claude Code. It includes:
+•Full project context and requirements
+•Step-by-step implementation guide
+•Key features to implement
+•Testing and debugging tips
+•Performance targets
+Windsurf will process this and generate the project structure, install dependencies, and begin implementation. Follow the step-by-step instructions carefully.
+If you get stuck on any step, ask Claude (in Windsurf) for help. The prompt is detailed enough that Windsurf can handle most setup and coding tasks autonomously.
