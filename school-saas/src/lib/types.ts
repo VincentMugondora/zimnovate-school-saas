@@ -4,6 +4,7 @@ export interface User {
   id: string;
   school_id: string;
   email: string;
+  password_hash?: string;
   role: UserRole;
   first_name: string;
   last_name: string;

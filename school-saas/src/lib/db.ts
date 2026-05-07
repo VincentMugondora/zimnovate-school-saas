@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { User, Student, Attendance, Grade, Class, School } from './types';
 
+// Import WebSocket polyfill for Node.js 20 compatibility
+import './websocket-polyfill.js';
+
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -9,8 +12,16 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
-export const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey || supabaseKey);
+// Configure Supabase client options
+const supabaseOptions = {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+};
+
+export const supabase = createClient(supabaseUrl, supabaseKey, supabaseOptions);
+export const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey || supabaseKey, supabaseOptions);
 
 export async function getUser(email: string): Promise<User | null> {
   const { data, error } = await supabaseAdmin
@@ -26,7 +37,7 @@ export async function getUser(email: string): Promise<User | null> {
   return data;
 }
 
-export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Promise<User | null> {
+export async function createUser(userData: Omit<User, 'id' | 'created_at'> & { password_hash?: string }): Promise<User | null> {
   const { data, error } = await supabaseAdmin
     .from('users')
     .insert([userData])

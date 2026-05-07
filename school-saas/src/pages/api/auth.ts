@@ -4,7 +4,23 @@ import { getUser, createUser } from '../../lib/db';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
-    const { email, password, action } = await request.json();
+    let data: any;
+    
+    // Check if request is JSON or form data
+    const contentType = request.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      data = await request.json();
+    } else {
+      // Handle form data from HTMX
+      const formData = await request.formData();
+      data = {
+        email: formData.get('email'),
+        password: formData.get('password'),
+        action: formData.get('action')
+      };
+    }
+    
+    const { email, password, action } = data;
 
     if (action === 'login') {
       // Login
