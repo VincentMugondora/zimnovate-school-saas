@@ -23,6 +23,12 @@ const supabaseOptions = {
 export const supabase = createClient(supabaseUrl, supabaseKey, supabaseOptions);
 export const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey || supabaseKey, supabaseOptions);
 
+// Helper to sanitize UUIDs and handle "null" strings
+function sanitizeId(id: string | null | undefined): string | null {
+  if (!id || id === 'null' || id === 'undefined') return null;
+  return id;
+}
+
 export async function getUser(email: string): Promise<User | null> {
   const { data, error } = await supabaseAdmin
     .from('users')
@@ -52,10 +58,13 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'> & { p
 }
 
 export async function getStudents(schoolId: string): Promise<Student[]> {
+  const sanitizedSchoolId = sanitizeId(schoolId);
+  if (!sanitizedSchoolId) return [];
+
   const { data, error } = await supabase
     .from('students')
     .select('*')
-    .eq('school_id', schoolId)
+    .eq('school_id', sanitizedSchoolId)
     .order('last_name', { ascending: true });
   
   if (error) {
@@ -95,10 +104,13 @@ export async function updateStudent(id: string, updates: Partial<Student>): Prom
 }
 
 export async function getAttendance(schoolId: string, date?: string): Promise<Attendance[]> {
+  const sanitizedSchoolId = sanitizeId(schoolId);
+  if (!sanitizedSchoolId) return [];
+
   let query = supabase
     .from('attendance')
     .select('*, students(*), classes(*)')
-    .eq('school_id', schoolId);
+    .eq('school_id', sanitizedSchoolId);
   
   if (date) {
     query = query.eq('date', date);
@@ -129,13 +141,17 @@ export async function updateAttendance(id: string, status: string): Promise<Atte
 }
 
 export async function getGrades(schoolId: string, studentId?: string): Promise<Grade[]> {
+  const sanitizedSchoolId = sanitizeId(schoolId);
+  if (!sanitizedSchoolId) return [];
+
   let query = supabase
     .from('grades')
     .select('*, students(*), classes(*)')
-    .eq('school_id', schoolId);
+    .eq('school_id', sanitizedSchoolId);
   
-  if (studentId) {
-    query = query.eq('student_id', studentId);
+  const sanitizedStudentId = sanitizeId(studentId);
+  if (sanitizedStudentId) {
+    query = query.eq('student_id', sanitizedStudentId);
   }
   
   const { data, error } = await query.order('created_at', { ascending: false });
@@ -162,13 +178,17 @@ export async function createGrade(gradeData: Omit<Grade, 'id' | 'created_at' | '
 }
 
 export async function getClasses(schoolId: string, teacherId?: string): Promise<Class[]> {
+  const sanitizedSchoolId = sanitizeId(schoolId);
+  if (!sanitizedSchoolId) return [];
+
   let query = supabase
     .from('classes')
     .select('*, users(*)')
-    .eq('school_id', schoolId);
+    .eq('school_id', sanitizedSchoolId);
   
-  if (teacherId) {
-    query = query.eq('teacher_id', teacherId);
+  const sanitizedTeacherId = sanitizeId(teacherId);
+  if (sanitizedTeacherId) {
+    query = query.eq('teacher_id', sanitizedTeacherId);
   }
   
   const { data, error } = await query.order('name', { ascending: true });
