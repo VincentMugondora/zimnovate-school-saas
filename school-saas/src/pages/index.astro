@@ -4,56 +4,71 @@ import Layout from '../layouts/Base.astro';
 
 <Layout title="School Management System - Login">
 	<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-		<div class="max-w-md w-full space-y-8">
-			<div>
-				<div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
-					<svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<div class="max-w-md w-full space-y-8 fade-in">
+			<div class="text-center">
+				<div class="mx-auto h-14 w-14 flex items-center justify-center rounded-xl bg-blue-50">
+					<svg class="h-10 w-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
 					</svg>
 				</div>
-				<h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-					SchoolManager
+				<h2 class="mt-4 text-2xl font-bold text-gray-900">
+					Welcome Back
 				</h2>
-				<p class="mt-2 text-center text-sm text-gray-600">
-					Sign in to your account
+				<p class="mt-1 text-sm text-gray-500">
+					Sign in to continue to SchoolManager
 				</p>
 			</div>
 			
 			<form 
-				class="mt-8 space-y-6"
+				class="mt-6 space-y-6"
 				hx-post="/api/auth"
 				hx-target="#login-error"
 				hx-swap="innerHTML"
 			>
 				<input type="hidden" name="action" value="login" />
-				<div class="rounded-md shadow-sm -space-y-px">
+				<div class="space-y-4">
 					<div>
-						<label for="email" class="sr-only">Email address</label>
+						<label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+							Email address
+						</label>
 						<input 
 							id="email" 
 							name="email" 
 							type="email" 
 							autocomplete="email" 
 							required 
-							class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
-							placeholder="Email address"
+							class="appearance-none relative block w-full px-4 py-3 border border-gray-200 placeholder-gray-400 text-gray-900 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none sm:text-base transition-all duration-200"
+							placeholder="Enter your email"
 						/>
 					</div>
 					<div>
-						<label for="password" class="sr-only">Password</label>
-						<input 
-							id="password" 
-							name="password" 
-							type="password" 
-							autocomplete="current-password" 
-							required 
-							class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
-							placeholder="Password"
-						/>
+						<label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+							Password
+						</label>
+						<div class="relative">
+							<input 
+								id="password" 
+								name="password" 
+								type="password" 
+								autocomplete="current-password" 
+								required 
+								class="appearance-none relative block w-full px-4 py-3 border border-gray-200 placeholder-gray-400 text-gray-900 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none sm:text-base transition-all duration-200"
+								placeholder="Enter your password"
+							/>
+							<button type="button"
+								class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
+								id="toggle-password"
+								aria-label="Show password"
+							>
+								<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.128-3.546-8.75-8.25a1.75 1.75 0 011.5-1.5A7.003 7.003 0 0011.25 9.75a1.75 1.75 0 013.5 0 7.003 7.003 0 005.5 1.5 1.75 1.75 0 011.5 1.5c-.622 4.704-4.272 8.25-8.75 8.25zM18.75 15a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+								</svg>
+							</button>
+						</div>
 					</div>
 				</div>
 
-				<div class="flex items-center justify-between">
+				<div class="flex items-center justify-between text-sm">
 					<div class="flex items-center">
 						<input 
 							id="remember-me" 
@@ -66,9 +81,9 @@ import Layout from '../layouts/Base.astro';
 						</label>
 					</div>
 
-					<div class="text-sm">
-						<a href="#" class="font-medium text-blue-600 hover:text-blue-500">
-							Forgot your password?
+					<div>
+						<a href="/forgot-password" class="font-medium text-blue-600 hover:text-blue-500 transition-colors">
+							Forgot password?
 						</a>
 					</div>
 				</div>
@@ -76,60 +91,56 @@ import Layout from '../layouts/Base.astro';
 				<div>
 					<button 
 						type="submit" 
-						class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+						class="w-full flex justify-center py-3 px-4 font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm hover:shadow-md"
 					>
-						<span class="absolute left-0 inset-y-0 flex items-center pl-3">
-							<svg class="h-5 w-5 text-blue-500 group-hover:text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-								<path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-							</svg>
-						</span>
 						Sign in
 					</button>
 				</div>
 
-				<div id="login-error" class="text-red-600 text-sm text-center hidden"></div>
+				<div id="login-error" class="mt-4 text-sm text-center hidden">
+					<!-- Error messages will be injected here -->
+				</div>
 			</form>
 
-			<div class="mt-6 text-center">
-				<p class="text-sm text-gray-600">
+			<div class="mt-8 text-center">
+				<p class="text-sm text-gray-500">
 					Don't have an account? 
-					<a href="/signup" class="font-medium text-blue-600 hover:text-blue-500">
+					<a href="/signup" class="font-medium text-blue-600 hover:text-blue-500 transition-colors">
 						Sign up
 					</a>
 				</p>
 			</div>
 
-			<div class="mt-6">
+			<div class="mt-10">
 				<div class="relative">
 					<div class="absolute inset-0 flex items-center">
-						<div class="w-full border-t border-gray-300"></div>
+						<div class="w-full border-t border-gray-200"></div>
 					</div>
 					<div class="relative flex justify-center text-sm">
-						<span class="px-2 bg-gray-50 text-gray-500">Demo Accounts</span>
+						<span class="px-2 bg-gray-50 text-gray-400">Or continue with</span>
 					</div>
 				</div>
-
-				<div class="mt-6 grid grid-cols-1 gap-3">
+				<div class="mt-6 grid gap-4">
 					<button 
 						type="button"
-						class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
-						onclick="fillDemoForm('admin')"
+						class="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
 					>
-						Admin Demo
+						<svg class="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
+							<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.59c-.29 1.16-.84 2.14-1.65 2.86v2.76h3.57c1.04-2.06 1.65-4.56 1.65-7.27z"/>
+							<path fill="#EA4335" d="M12 22.75c-2.9 0-5.46-.98-7.28-2.67l-1.42 2.28C6.26 22.07 9.38 24 12 24c5.08 0 9.42-2.73 10.9-6.56l-3.61-3.73c-.86 1.02-2.07 1.65-3.44 1.65z"/>
+							<path fill="#FBBC05" d="M7.28 12.25c0-1.77.55-3.38 1.49-4.66l3.73 3.61C10.58 9.45 8.93 10.91 8.07 12.25H4.46c1.38 2.35 2.2 5.02 2.2 7.75 0 4.28-2.54 7.9-6.06 8.73l2.62-1.59z"/>
+							<path fill="#34A853" d="M12 5.38c1.86 0 3.52.58 4.85 1.56l3.73-3.61c-1.24-1.6-3.05-2.5-5.08-2.5-3.39 0-6.26 2.14-7.52 5.1l2.62 1.59C8.83 8.79 10.23 7.28 12 5.38z"/>
+						</svg>
+						<span class="text-sm text-gray-700">Google</span>
 					</button>
 					<button 
 						type="button"
-						class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
-						onclick="fillDemoForm('teacher')"
+						class="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
 					>
-						Teacher Demo
-					</button>
-					<button 
-						type="button"
-						class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
-						onclick="fillDemoForm('parent')"
-					>
-						Parent Demo
+						<svg class="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
+							<path d="M23.47 12.5c0-1.35-.28-2.65-.77-3.8l-8.58 4.98c-.38.22-.84.34-1.32.34-1.02 0-1.91-.39-2.65-1.05l-3.16 3.16c1.02.87 1.94 1.94 2.65 3.18l4.98-8.58c1.16-.49 2.11-1.34 2.65-2.65zM16.6 8.04l-3.16-3.16c-.85-.73-2.02-1.14-3.29-1.14-1.81 0-3.38.8-4.33 2.03l3.16 3.16c.79-.83 1.41-1.83 1.81-2.94h4.13zM5.21 7.25l3.16-3.16c.79.83 1.41 1.83 1.81 2.94H1.08v4.13c.95-1.23 1.51-2.65 1.51-4.13zM7.75 16.6l-3.16 3.16c-.85.73-2.02 1.14-3.29 1.14-1.02 0-1.91-.39-2.65-1.05l3.16-3.16c1.02-.87 1.94-1.94 2.65-3.18l-4.98 8.58c-1.16.49-2.11 1.34-2.65 2.65z"/>
+						</svg>
+						<span class="text-sm text-gray-700">Apple</span>
 					</button>
 				</div>
 			</div>
@@ -154,6 +165,19 @@ import Layout from '../layouts/Base.astro';
 			}
 		}
 
+		// Toggle password visibility
+		const togglePasswordButton = document.getElementById('toggle-password');
+		const passwordField = document.getElementById('password');
+		
+		if (togglePasswordButton && passwordField) {
+			togglePasswordButton.addEventListener('click', function () {
+				const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+				passwordField.setAttribute('type', type);
+				// Toggle icon
+				this.querySelector('svg').classList.toggle('opacity-50');
+			});
+		}
+
 		// Handle login response
 		document.addEventListener('htmx:afterRequest', function(evt) {
 			if (evt.detail.target.id === 'login-error') {
@@ -163,6 +187,11 @@ import Layout from '../layouts/Base.astro';
 					if (data.error) {
 						evt.detail.target.textContent = data.error;
 						evt.detail.target.classList.remove('hidden');
+						// Add shake animation
+						evt.detail.target.classList.add('animate-shake');
+						setTimeout(() => {
+							evt.detail.target.classList.remove('animate-shake');
+						}, 500);
 					} else if (data.user && data.token) {
 						// Successful login - redirect to dashboard
 						window.location.href = '/dashboard';
@@ -173,4 +202,15 @@ import Layout from '../layouts/Base.astro';
 			}
 		});
 	</script>
+
+	<style>
+		@keyframes shake {
+			0%, 100% { transform: translateX(0); }
+			10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+			20%, 40%, 60%, 80% { transform: translateX(5px); }
+		}
+		.animate-shake {
+			animation: shake 0.5s ease-in-out;
+		}
+	</style>
 </Layout>
