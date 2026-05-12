@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getAuthFromCookie } from '../../lib/auth';
-import { getAttendance, updateAttendance } from '../../lib/db';
+import { getAttendance, updateAttendance, createAttendance } from '../../lib/db';
 import { supabase } from '../../lib/db';
 
 export const GET: APIRoute = async ({ cookies, url }) => {
@@ -89,27 +89,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       result = await updateAttendance(existingRecord.id, attendanceData.status);
     } else {
       // Create new record
-      const newRecord = {
+      result = await createAttendance({
         ...attendanceData,
-        school_id: auth.school_id,
-        id: crypto.randomUUID()
-      };
-      
-      const { data, error } = await supabase
-        .from('attendance')
-        .insert([newRecord])
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error creating attendance:', error);
-        return new Response(JSON.stringify({ error: 'Failed to create attendance record' }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      
-      result = data;
+        school_id: auth.school_id
+      });
+    }
+
+    if (!result) {
+      return new Response(JSON.stringify({ error: 'Failed to save attendance record' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     return new Response(JSON.stringify({ attendance: result }), {

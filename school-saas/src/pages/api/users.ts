@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { supabaseAdmin } from '../../lib/db';
+import { getUsers } from '../../lib/db';
 import { getAuthFromCookie } from '../../lib/auth';
 
 export const GET: APIRoute = async ({ cookies }) => {
@@ -12,12 +12,7 @@ export const GET: APIRoute = async ({ cookies }) => {
   }
 
   try {
-    const { data: users, error } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .order('last_name', { ascending: true });
-
-    if (error) throw error;
+    const users = await getUsers(auth.school_id);
 
     return new Response(JSON.stringify({ users }), {
       status: 200,

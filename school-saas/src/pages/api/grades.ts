@@ -1,7 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getAuthFromCookie } from '../../lib/auth';
-import { getGrades, createGrade } from '../../lib/db';
-import { supabase } from '../../lib/db';
+import { getGrades, createGrade, updateGrade } from '../../lib/db';
 
 export const GET: APIRoute = async ({ cookies, url }) => {
   try {
@@ -97,41 +96,22 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     
     if (existingRecord) {
       // Update existing record
-      const { data, error } = await supabase
-        .from('grades')
-        .update({ 
-          grade: gradeData.grade,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', existingRecord.id)
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error updating grade:', error);
-        return new Response(JSON.stringify({ error: 'Failed to update grade' }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      
-      result = data;
+      result = await updateGrade(existingRecord.id, { 
+        grade: gradeData.grade 
+      });
     } else {
       // Create new record
-      const newGrade = {
+      result = await createGrade({
         ...gradeData,
-        school_id: auth.school_id,
-        id: crypto.randomUUID()
-      };
-      
-      result = await createGrade(newGrade);
-      
-      if (!result) {
-        return new Response(JSON.stringify({ error: 'Failed to create grade' }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
+        school_id: auth.school_id
+      });
+    }
+
+    if (!result) {
+      return new Response(JSON.stringify({ error: 'Failed to save grade record' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     return new Response(JSON.stringify({ grade: result }), {
@@ -175,33 +155,16 @@ export const PUT: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    const { data, error } = await supabase
-      .from('grades')
-      .update({ 
-        grade,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .eq('school_id', auth.school_id)
-      .select()
-      .single();
+    const result = await updateGrade(id, { grade });
     
-    if (error) {
-      console.error('Error updating grade:', error);
-      return new Response(JSON.stringify({ error: 'Failed to update grade' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-    
-    if (!data) {
-      return new Response(JSON.stringify({ error: 'Grade not found' }), {
+    if (!result) {
+      return new Response(JSON.stringify({ error: 'Grade not found or update failed' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    return new Response(JSON.stringify({ grade: data }), {
+    return new Response(JSON.stringify({ grade: result }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

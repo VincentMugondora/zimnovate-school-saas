@@ -25,21 +25,82 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
     
     const { email, password, action } = data;
+    
+    // Check for demo mode or local fallback
+    const isDemoAccount = email && (
+      email === 'admin@school.com' || 
+      email === 'teacher@school.com' || 
+      email === 'parent@school.com'
+    );
 
     if (action === 'login') {
-      // Login
-      const user = await getUser(email);
+      let user: any = null;
+      
+      try {
+        // Attempt to get user from DB with a timeout
+        const userPromise = getUser(email);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database timeout')), 5000)
+        );
+        
+        user = await Promise.race([userPromise, timeoutPromise]);
+      } catch (err) {
+        console.warn('Database connection failed, checking for demo fallback:', err.message);
+      }
+      
+      // If user not found in DB but it's a demo account, use local fallback
+      if (!user && isDemoAccount) {
+        const demoUsers: Record<string, any> = {
+          'admin@school.com': { 
+            id: 'demo-admin-id', 
+            email: 'admin@school.com', 
+            role: 'admin', 
+            first_name: 'Demo', 
+            last_name: 'Admin',
+            password: 'admin123' // Plain text for local comparison
+          },
+          'teacher@school.com': { 
+            id: 'demo-teacher-id', 
+            email: 'teacher@school.com', 
+            role: 'teacher', 
+            first_name: 'Demo', 
+            last_name: 'Teacher',
+            password: 'teacher123'
+          },
+          'parent@school.com': { 
+            id: 'demo-parent-id', 
+            email: 'parent@school.com', 
+            role: 'parent', 
+            first_name: 'Demo', 
+            last_name: 'Parent',
+            password: 'parent123'
+          }
+        };
+        
+        const demoUser = demoUsers[email];
+        if (demoUser && password === demoUser.password) {
+          user = demoUser;
+        }
+      }
+
       if (!user) {
-        return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
+        return new Response(JSON.stringify({ error: 'Invalid credentials or database unreachable' }), {
           status: 401,
           headers: { 'Content-Type': 'application/json' }
         });
       }
 
-      // In production, you'd compare hashed passwords
-      // For now, we'll do a simple comparison
-      const isValid = await comparePassword(password, user.password_hash || '');
-      if (!isValid) {
+      // Validate password (only if not already validated by demo fallback)
+      if (user.password_hash) {
+        const isValid = await comparePassword(password, user.password_hash);
+        if (!isValid) {
+          return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      } else if (user.password && password !== user.password) {
+        // This handles the local demo user plain text password
         return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
           status: 401,
           headers: { 'Content-Type': 'application/json' }
