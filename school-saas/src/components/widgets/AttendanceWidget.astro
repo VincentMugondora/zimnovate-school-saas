@@ -1,0 +1,109 @@
+---
+export interface Props {
+	totalStudents: number;
+	presentToday: number;
+	attendanceRate: number;
+	classes: Array<{
+		name: string;
+		total: number;
+		present: number;
+		rate: number;
+	}>;
+	weeklyTrend: Array<{ day: string; rate: number }>;
+}
+
+const { 
+	totalStudents = 1247,
+	presentToday = 1189,
+	attendanceRate = 95.3,
+	classes = [
+		{ name: 'Grade 1-A', total: 32, present: 31, rate: 97 },
+		{ name: 'Grade 1-B', total: 30, present: 29, rate: 97 },
+		{ name: 'Grade 2-A', total: 28, present: 26, rate: 93 },
+		{ name: 'Grade 3-A', total: 35, present: 34, rate: 97 },
+		{ name: 'Grade 4-A', total: 30, present: 28, rate: 93 },
+	],
+	weeklyTrend = [
+		{ day: 'Mon', rate: 94 },
+		{ day: 'Tue', rate: 96 },
+		{ day: 'Wed', rate: 95 },
+		{ day: 'Thu', rate: 95 },
+		{ day: 'Fri', rate: 97 },
+	]
+} = Astro.props;
+---
+
+<div class="space-y-6">
+	<!-- Summary Cards -->
+	<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+		<div class="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-soft transition-shadow">
+			<div class="flex items-center justify-between">
+				<div>
+					<p class="text-sm text-gray-500">Present Today</p>
+					<p class="text-2xl font-heading font-bold text-gray-900">{presentToday.toLocaleString()}</p>
+					<p class="text-xs text-gray-400 mt-1">of {totalStudents.toLocaleString()} students</p>
+				</div>
+				<div class="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center">
+					<svg class="w-6 h-6 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+					</svg>
+				</div>
+			</div>
+		</div>
+		
+		<div class="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-soft transition-shadow">
+			<div class="flex items-center justify-between">
+				<div>
+					<p class="text-sm text-gray-500">Overall Rate</p>
+					<p class="text-2xl font-heading font-bold text-teal-600">{attendanceRate}%</p>
+					<p class="text-xs text-gray-400 mt-1">this week</p>
+				</div>
+				<div class="w-12 h-12 rounded-2xl bg-cyan-50 flex items-center justify-center">
+					<svg class="w-6 h-6 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+					</svg>
+				</div>
+			</div>
+		</div>
+		
+		<div class="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-soft transition-shadow">
+			<div class="flex items-center justify-between">
+				<div>
+					<p class="text-sm text-gray-500">Absent Today</p>
+					<p class="text-2xl font-heading font-bold text-orange-600">{totalStudents - presentToday}</p>
+					<p class="text-xs text-gray-400 mt-1">students</p>
+				</div>
+				<div class="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center">
+					<svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+					</svg>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Class Attendance List -->
+	<div class="bg-white rounded-3xl shadow-card p-6 md:p-8 border border-gray-100">
+		<div class="flex items-center justify-between mb-6">
+			<div>
+				<h3 class="text-lg font-heading font-semibold text-gray-900">Class Attendance</h3>
+				<p class="text-sm text-gray-500 mt-1">Today's attendance by class</p>
+			</div>
+		</div>
+		
+		<div class="space-y-4">
+			{classes.map((cls) => (
+				<div class="group">
+					<div class="flex items-center justify-between mb-2">
+						<div>
+							<p class="text-sm font-medium text-gray-900">{cls.name}</p>
+							<p class="text-xs text-gray-500">{cls.present} of {cls.total} present</p>
+						</div>
+						<p class="text-sm font-bold text-teal-600">{cls.rate}%</p>
+					</div>
+					<ProgressBar value={cls.rate} color="teal" size="md" />
+				</div>
+			))}
+		</div>
+	</div>
+</div>

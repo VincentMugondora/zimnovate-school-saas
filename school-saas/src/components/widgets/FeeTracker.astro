@@ -1,0 +1,128 @@
+---
+export interface Props {
+	totalFees: number;
+	collected: number;
+	pending: number;
+	overdue: number;
+	recentPayments: Array<{
+		student: string;
+		amount: number;
+		date: string;
+		method: string;
+	}>;
+}
+
+const { 
+	totalFees = 2450000,
+	collected = 1890000,
+	pending = 450000,
+	overdue = 110000,
+	recentPayments = [
+		{ student: 'Emma Thompson', amount: 25000, date: '2024-02-10', method: 'Online' },
+		{ student: 'Liam Johnson', amount: 25000, date: '2024-02-09', method: 'Bank Transfer' },
+		{ student: 'Olivia Wilson', amount: 25000, date: '2024-02-09', method: 'Cash' },
+		{ student: 'Noah Brown', amount: 50000, date: '2024-02-08', method: 'Online' },
+		{ student: 'Sophia Lee', amount: 25000, date: '2024-02-07', method: 'Online' },
+	]
+} = Astro.props;
+
+const collectedPercent = ((collected / totalFees) * 100).toFixed(1);
+const pendingPercent = ((pending / totalFees) * 100).toFixed(1);
+const overduePercent = ((overdue / totalFees) * 100).toFixed(1);
+---
+
+<div class="space-y-6">
+	<!-- Summary Cards -->
+	<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+		<div class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl p-4 text-white relative overflow-hidden">
+			<div class="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2"></div>
+			<p class="text-teal-100 text-sm mb-1">Total Fees</p>
+			<p class="text-xl font-heading font-bold">{(totalFees / 100000).toFixed(1)}L</p>
+			<p class="text-xs text-teal-100 mt-1">Academic Year</p>
+		</div>
+		
+		<div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-4 text-white relative overflow-hidden">
+			<div class="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2"></div>
+			<p class="text-green-100 text-sm mb-1">Collected</p>
+			<p class="text-xl font-heading font-bold">{(collected / 100000).toFixed(1)}L</p>
+			<p class="text-xs text-green-100 mt-1">{collectedPercent}% collected</p>
+		</div>
+		
+		<div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-4 text-white relative overflow-hidden">
+			<div class="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2"></div>
+			<p class="text-orange-100 text-sm mb-1">Pending</p>
+			<p class="text-xl font-heading font-bold">{(pending / 100000).toFixed(1)}L</p>
+			<p class="text-xs text-orange-100 mt-1">{pendingPercent}% pending</p>
+		</div>
+		
+		<div class="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-4 text-white relative overflow-hidden">
+			<div class="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2"></div>
+			<p class="text-red-100 text-sm mb-1">Overdue</p>
+			<p class="text-xl font-heading font-bold">{(overdue / 100000).toFixed(1)}L</p>
+			<p class="text-xs text-red-100 mt-1">{overduePercent}% overdue</p>
+		</div>
+	</div>
+	
+	<!-- Progress Overview -->
+	<div class="bg-white rounded-3xl shadow-card p-6 md:p-8 border border-gray-100">
+		<div class="mb-6">
+			<h3 class="text-lg font-heading font-semibold text-gray-900">Collection Progress</h3>
+			<p class="text-sm text-gray-500 mt-1">Fee collection status for current term</p>
+		</div>
+		
+		<div class="space-y-6">
+			<ProgressBar 
+				label="Collected" 
+				value={parseFloat(collectedPercent)} 
+				color="teal" 
+				size="lg" 
+				showPercentage={true}
+			/>
+			<ProgressBar 
+				label="Pending" 
+				value={parseFloat(pendingPercent)} 
+				color="orange" 
+				size="lg" 
+				showPercentage={true}
+			/>
+			<ProgressBar 
+				label="Overdue" 
+				value={parseFloat(overduePercent)} 
+				color="red" 
+				size="lg" 
+				showPercentage={true}
+			/>
+		</div>
+	</div>
+	
+	<!-- Recent Payments -->
+	<div class="bg-white rounded-3xl shadow-card p-6 md:p-8 border border-gray-100">
+		<div class="flex items-center justify-between mb-6">
+			<div>
+				<h3 class="text-lg font-heading font-semibold text-gray-900">Recent Payments</h3>
+				<p class="text-sm text-gray-500 mt-1">Latest fee transactions</p>
+			</div>
+		</div>
+		
+		<div class="space-y-3">
+			{recentPayments.map((payment, index) => (
+				<div class="flex items-center justify-between p-3 rounded-xl hover:bg-beige-50 transition-colors border border-transparent hover:border-gray-100">
+					<div class="flex items-center gap-3">
+						<div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+							<svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+							</svg>
+						</div>
+						<div>
+							<p class="text-sm font-medium text-gray-900">{payment.student}</p>
+							<p class="text-xs text-gray-500">{payment.date} • {payment.method}</p>
+						</div>
+					</div>
+					<p class="text-sm font-semibold text-teal-600">
+						Rs.{(payment.amount / 1000).toFixed(0)}K
+					</p>
+				</div>
+			))}
+		</div>
+	</div>
+</div>

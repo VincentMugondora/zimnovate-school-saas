@@ -1,57 +1,34 @@
 ---
 import Base from './Base.astro';
-import Nav from '../components/Nav.astro';
+import Sidebar from '../components/Sidebar.astro';
+import TopNavbar from '../components/TopNavbar.astro';
 
 export interface Props {
 	title: string;
+	userName?: string;
+	userRole: 'admin' | 'teacher' | 'parent';
+	schoolName?: string;
 }
 
-const { title } = Astro.props;
+const { title, userName = 'Admin User', userRole, schoolName = 'EduSchool' } = Astro.props;
 ---
 
 <Base title={title}>
-	<Nav userRole="admin" />
-	
-	<div class="flex h-screen bg-gray-50">
+	<div class="flex h-screen bg-beige-100 overflow-hidden">
 		<!-- Sidebar -->
-		<aside class="w-64 bg-white shadow-md">
-			<div class="p-4">
-				<h2 class="text-xl font-bold text-gray-800 mb-6">Admin Panel</h2>
-				<nav class="space-y-2">
-					<a href="/dashboard" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">
-						📊 Dashboard
-					</a>
-					<a href="/students" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">
-						👥 Students
-					</a>
-					<a href="/attendance" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">
-						📅 Attendance
-					</a>
-					<a href="/grades" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">
-						📝 Grades
-					</a>
-					<a href="/classes" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">
-						🏫 Classes
-					</a>
-					<a href="/users" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">
-						👤 Users
-					</a>
-					<hr class="my-4">
-					<a href="/reports" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">
-						📈 Reports
-					</a>
-					<a href="/settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">
-						⚙️ Settings
-					</a>
-				</nav>
-			</div>
-		</aside>
+		<Sidebar userRole={userRole} userName={userName} schoolName={schoolName} />
 		
-		<!-- Main Content -->
-		<main class="flex-1 overflow-y-auto">
-			<div class="p-6">
-				<slot />
-			</div>
-		</main>
+		<!-- Main Content Area -->
+		<div class="flex-1 flex flex-col overflow-hidden">
+			<!-- Top Navigation -->
+			<TopNavbar userName={userName} userRole={userRole} />
+			
+			<!-- Page Content -->
+			<main class="flex-1 overflow-y-auto bg-beige-100 p-4 md:p-6 lg:p-8">
+				<div class="max-w-7xl mx-auto space-y-6 md:space-y-8 animate-fade-in">
+					<slot />
+				</div>
+			</main>
+		</div>
 	</div>
 </Base>

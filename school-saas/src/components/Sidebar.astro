@@ -1,0 +1,105 @@
+---
+export interface Props {
+	activeRoute?: string;
+	userRole: 'admin' | 'teacher' | 'parent';
+	userName?: string;
+	schoolName?: string;
+}
+
+const { activeRoute = '/dashboard', userRole, userName = 'Admin User', schoolName = 'EduSchool' } = Astro.props;
+
+const navItems = [
+	{ route: '/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
+	{ route: '/students', label: 'Students', icon: 'users', roles: ['admin', 'teacher'] },
+	{ route: '/teachers', label: 'Teachers', icon: 'chalkboard-teacher', roles: ['admin'] },
+	{ route: '/classes', label: 'Classes', icon: 'book-open', roles: ['admin', 'teacher'] },
+	{ route: '/attendance', label: 'Attendance', icon: 'clipboard-check', roles: ['admin', 'teacher', 'parent'] },
+	{ route: '/assignments', label: 'Assignments', icon: 'file-text', roles: ['admin', 'teacher'] },
+	{ route: '/exams', label: 'Exams', icon: 'file-check', roles: ['admin', 'teacher'] },
+	{ route: '/finance', label: 'Finance', icon: 'dollar-sign', roles: ['admin'] },
+	{ route: '/analytics', label: 'Analytics', icon: 'bar-chart-2', roles: ['admin'] },
+	{ route: '/settings', label: 'Settings', icon: 'settings', roles: ['admin'] },
+];
+
+const LucideIcons = {
+	'layout-dashboard': `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>`,
+	'users': `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+	'chalkboard-teacher': `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="m14 7 3 3-3 3"/></svg>`,
+	'book-open': `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+	'clipboard-check': `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1"/><path d="m9 14 2 2 4-4"/></svg>`,
+	'file-text': `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+	'file-check': `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>`,
+	'dollar-sign': `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+	'bar-chart-2': `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>`,
+	'settings': `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.72v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>`,
+};
+
+const filteredItems = navItems.filter(item => {
+	if (item.roles) return item.roles.includes(userRole);
+	return true;
+});
+---
+
+<aside class="w-64 bg-white shadow-soft h-screen sticky top-0 flex flex-col border-r border-gray-100">
+	<!-- Logo & Brand -->
+	<div class="p-6 pb-4">
+		<a href="/dashboard" class="flex items-center space-x-3 group">
+			<div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-lg group-hover:shadow-teal-200 transition-shadow duration-300">
+				<svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+					<path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+					<path d="M6 12v5c3 3 9 3 12 0v-5"/>
+				</svg>
+			</div>
+			<div>
+				<h1 class="text-lg font-heading font-bold text-gray-900 leading-tight">{schoolName}</h1>
+				<p class="text-xs text-gray-500 uppercase tracking-wider">SaaS Platform</p>
+			</div>
+		</a>
+	</div>
+
+	<!-- Navigation -->
+	<nav class="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
+		{filteredItems.map((item) => {
+			const isActive = activeRoute === item.route || 
+				(item.route !== '/dashboard' && activeRoute.startsWith(item.route));
+			const IconSvg = LucideIcons[item.icon as keyof typeof LucideIcons];
+			
+			return (
+				<a 
+					href={item.route}
+					class={`flex items-center px-4 py-3 rounded-2xl transition-all duration-200 group relative ${
+						isActive 
+							? 'bg-teal-500 text-white shadow-teal-200' 
+							: 'text-gray-600 hover:bg-beige-100 hover:text-gray-900'
+					}`}
+				>
+					{isActive && (
+						<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full"></div>
+					)}
+					<span class="mr-3 flex-shrink-0 {isActive ? 'text-white' : 'text-gray-400 group-hover:text-teal-500'}">
+						{IconSvg ? IconSvg : ''}
+					</span>
+					<span class="font-medium text-sm truncate">{item.label}</span>
+					{isActive && (
+						<div class="ml-auto w-2 h-2 rounded-full bg-white/80"></div>
+					)}
+				</a>
+			);
+		})}
+	</nav>
+
+	<!-- User Profile -->
+	<div class="p-4 border-t border-gray-100">
+		<a href="/profile" class="flex items-center space-x-3 p-3 rounded-2xl hover:bg-beige-100 transition-colors group">
+			<div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white font-semibold text-sm">
+				{userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+			</div>
+			<div class="flex-1 min-w-0">
+				<p class="text-sm font-medium text-gray-900 truncate group-hover:text-teal-600 transition-colors">
+					{userName}
+				</p>
+				<p class="text-xs text-gray-500 capitalize">{userRole}</p>
+			</div>
+		</a>
+	</div>
+</aside>

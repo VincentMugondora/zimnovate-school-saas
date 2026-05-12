@@ -1,0 +1,28 @@
+---
+export interface Props {
+	src?: string;
+	name: string;
+	size?: 'sm' | 'md' | 'lg';
+	class?: string;
+}
+
+const { src, name, size = 'md', className } = Astro.props;
+
+const sizeStyles = {
+	sm: 'w-8 h-8 text-xs',
+	md: 'w-10 h-10 text-sm',
+	lg: 'w-14 h-14 text-base',
+};
+
+const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+const colors = ['bg-teal-500', 'bg-cyan-500', 'bg-orange-500', 'bg-blue-500', 'bg-purple-500'];
+const colorIndex = name.charCodeAt(0) % colors.length;
+---
+
+<div class={`${sizeStyles[size]} rounded-full flex items-center justify-center text-white font-semibold ${colors[colorIndex]} ${className || ''}`}>
+	{src ? (
+		<img src={src} alt={name} class="w-full h-full rounded-full object-cover" />
+	) : (
+		{initials}
+	)}
+</div>

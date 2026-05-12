@@ -1,0 +1,120 @@
+---
+export interface Props {
+	subjects: Array<{
+		name: string;
+		average: number;
+		topScore: number;
+		passRate: number;
+	}>;
+	recentGrades: Array<{
+		student: string;
+		subject: string;
+		grade: string;
+		score: number;
+		date: string;
+	}>;
+}
+
+const { 
+	subjects = [
+		{ name: 'Mathematics', average: 78, topScore: 98, passRate: 92 },
+		{ name: 'English', average: 82, topScore: 95, passRate: 96 },
+		{ name: 'Science', average: 75, topScore: 93, passRate: 88 },
+		{ name: 'History', average: 79, topScore: 96, passRate: 91 },
+		{ name: 'Art', average: 88, topScore: 100, passRate: 98 },
+	],
+	recentGrades = [
+		{ student: 'Aaliyah Khan', subject: 'Mathematics', grade: 'A', score: 92, date: '2024-02-10' },
+		{ student: 'Benjamin Wright', subject: 'English', grade: 'B+', score: 85, date: '2024-02-09' },
+		{ student: 'Charlotte Green', subject: 'Science', grade: 'A-', score: 88, date: '2024-02-09' },
+		{ student: 'Daniel Kim', subject: 'History', grade: 'B', score: 82, date: '2024-02-08' },
+		{ student: 'Eva Martinez', subject: 'Mathematics', grade: 'A+', score: 97, date: '2024-02-07' },
+	]
+} = Astro.props;
+
+const getGradeColor = (score: number) => {
+	if (score >= 90) return 'text-green-600 bg-green-100';
+	if (score >= 80) return 'text-teal-600 bg-teal-100';
+	if (score >= 70) return 'text-blue-600 bg-blue-100';
+	if (score >= 60) return 'text-yellow-600 bg-yellow-100';
+	return 'text-red-600 bg-red-100';
+};
+
+const getLetterGrade = (score: number) => {
+	if (score >= 90) return 'A';
+	if (score >= 80) return 'B';
+	if (score >= 70) return 'C';
+	if (score >= 60) return 'D';
+	return 'F';
+};
+---
+
+<div class="space-y-6">
+	<!-- Subject Performance Cards -->
+	<div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+		{subjects.map((subject) => (
+			<div class="bg-white rounded-2xl p-4 border border-gray-100 hover:shadow-soft transition-shadow text-center">
+				<h4 class="text-xs font-medium text-gray-500 mb-2 truncate">{subject.name}</h4>
+				<div class="relative inline-flex items-center justify-center w-16 h-16">
+					<svg class="w-16 h-16 transform -rotate-90">
+						<circle cx="32" cy="32" r="24" stroke="#e5e7eb" stroke-width="6" fill="none" />
+						<circle 
+							 cx="32" cy="32" r="24" 
+							stroke={subject.average >= 70 ? '#00A8B5' : subject.average >= 60 ? '#f59e0b' : '#ef4444'}
+							stroke-width="6" 
+							fill="none" 
+							stroke-dasharray={`${(subject.average / 100) * 150} 150`}
+							stroke-linecap="round"
+							class="transition-all duration-700"
+						/>
+					</svg>
+					<span class="absolute text-sm font-bold text-gray-900">{subject.average}%</span>
+				</div>
+				<p class="text-xs text-gray-500 mt-2">Pass: {subject.passRate}%</p>
+			</div>
+		))}
+	</div>
+	
+	<!-- Recent Grades Table -->
+	<div class="bg-white rounded-3xl shadow-card p-6 md:p-8 border border-gray-100">
+		<div class="flex items-center justify-between mb-6">
+			<div>
+				<h3 class="text-lg font-heading font-semibold text-gray-900">Recent Grades</h3>
+				<p class="text-sm text-gray-500 mt-1">Latest scores from all classes</p>
+			</div>
+		</div>
+		
+		<div class="overflow-x-auto">
+			<table class="w-full">
+				<thead>
+					<tr class="border-b border-gray-100">
+						<th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Student</th>
+						<th class="text-left py-3 px-4 text-sm font-medium text-gray-500 hidden md:table-cell">Subject</th>
+						<th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Grade</th>
+						<th class="text-left py-3 px-4 text-sm font-medium text-gray-500 hidden sm:table-cell">Date</th>
+					</tr>
+				</thead>
+				<tbody>
+					{recentGrades.map((grade, index) => (
+						<tr class="border-b border-gray-50 hover:bg-beige-50 transition-colors animate-fade-in" style={`animation-delay: ${index * 50}ms`}>
+							<td class="py-3 px-4">
+								<p class="text-sm font-medium text-gray-900">{grade.student}</p>
+								<p class="text-xs text-gray-500 md:hidden">{grade.subject}</p>
+							</td>
+							<td class="py-3 px-4 text-sm text-gray-600 hidden md:table-cell">{grade.subject}</td>
+							<td class="py-3 px-4">
+								<span class={`inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-semibold ${getGradeColor(grade.score)}`}>
+									{grade.grade}
+									<span class="text-xs ml-1 opacity-70">({grade.score}%)</span>
+								</span>
+							</td>
+							<td class="py-3 px-4 text-sm text-gray-500 hidden sm:table-cell">
+								{new Date(grade.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

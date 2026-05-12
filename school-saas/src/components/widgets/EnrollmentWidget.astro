@@ -1,0 +1,94 @@
+---
+export interface Props {
+	months: string[];
+	totalStudents: number;
+	newStudents: number;
+	growthRate: number;
+	enrollmentData: Array<{ month: string; enrolled: number }>;
+}
+
+const { 
+	months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+	totalStudents = 1247,
+	newStudents = 48,
+	growthRate = 12,
+	enrollmentData = [
+		{ month: 'Jan', enrolled: 980 },
+		{ month: 'Feb', enrolled: 1020 },
+		{ month: 'Mar', enrolled: 1080 },
+		{ month: 'Apr', enrolled: 1120 },
+		{ month: 'May', enrolled: 1180 },
+		{ month: 'Jun', enrolled: 1247 },
+	]
+} = Astro.props;
+---
+
+<div class="space-y-6">
+	<!-- Stats Row -->
+	<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+		<div class="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-soft transition-shadow">
+			<div class="flex items-center justify-between">
+				<div>
+					<p class="text-sm text-gray-500 mb-1">Total Students</p>
+					<p class="text-2xl font-heading font-bold text-gray-900">{totalStudents.toLocaleString()}</p>
+				</div>
+				<div class="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center">
+					<svg class="w-6 h-6 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+					</svg>
+				</div>
+			</div>
+		</div>
+		
+		<div class="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-soft transition-shadow">
+			<div class="flex items-center justify-between">
+				<div>
+					<p class="text-sm text-gray-500 mb-1">New This Month</p>
+					<p class="text-2xl font-heading font-bold text-gray-900">+{newStudents}</p>
+				</div>
+				<div class="w-12 h-12 rounded-2xl bg-cyan-50 flex items-center justify-center">
+					<svg class="w-6 h-6 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+					</svg>
+				</div>
+			</div>
+		</div>
+		
+		<div class="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-soft transition-shadow">
+			<div class="flex items-center justify-between">
+				<div>
+					<p class="text-sm text-gray-500 mb-1">Growth Rate</p>
+					<p class="text-2xl font-heading font-bold text-gray-900">+{growthRate}%</p>
+				</div>
+				<div class="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center">
+					<svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+					</svg>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Chart Section -->
+	<div class="bg-white rounded-3xl shadow-card p-6 md:p-8 border border-gray-100">
+		<div class="flex items-center justify-between mb-6">
+			<div>
+				<h3 class="text-lg font-heading font-semibold text-gray-900">Enrollment Trends</h3>
+				<p class="text-sm text-gray-500 mt-1">Monthly student enrollment over time</p>
+			</div>
+			<button class="px-4 py-2 text-sm font-medium text-gray-600 bg-beige-100 hover:bg-beige-200 rounded-xl transition-colors">
+				View Report
+			</button>
+		</div>
+		
+		<div class="h-64">
+			<BarChart 
+				data={enrollmentData.map(d => ({
+					label: d.month,
+					value: d.enrolled,
+					color: 'bg-teal-400'
+				}))} 
+			/>
+		</div>
+	</div>
+</div>

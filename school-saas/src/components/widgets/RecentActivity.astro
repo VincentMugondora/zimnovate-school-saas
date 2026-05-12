@@ -1,0 +1,115 @@
+---
+export interface Props {
+	activities: Array<{
+		id: string;
+		user: {
+			name: string;
+			avatar?: string;
+			role: string;
+		};
+		action: string;
+		target?: string;
+		timestamp: string;
+		type: 'login' | 'grade' | 'attendance' | 'payment' | 'announcement' | 'system';
+		details?: string;
+	}>;
+	maxItems?: number;
+}
+
+const { 
+	activities = [],
+	maxItems = 10
+} = Astro.props;
+
+const typeStyles = {
+	login: { bg: 'bg-blue-100', icon: 'login', text: 'text-blue-600' },
+	grade: { bg: 'bg-purple-100', icon: 'edit', text: 'text-purple-600' },
+	attendance: { bg: 'bg-teal-100', icon: 'check', text: 'text-teal-600' },
+	payment: { bg: 'bg-green-100', icon: 'dollar', text: 'text-green-600' },
+	announcement: { bg: 'bg-orange-100', icon: 'bell', text: 'text-orange-600' },
+	system: { bg: 'bg-gray-100', icon: 'cog', text: 'text-gray-600' },
+};
+
+const typeIcons = {
+	login: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>`,
+	edit: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>`,
+	check: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+	dollar: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>`,
+	bell: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>`,
+	cog: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2v0a2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2h.09A1.65 1.65 0 0012.4 5a1.65 1.65 0 00-1.51 1H5a2 2 0 012-2v0a2 2 0 012 2h.09a1.65 1.65 0 001.82-33l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 00.33 1.82 1.65 1.65 0 001.51-1H13a2 2 0 012-2v0a2 2 0 012 2h.09a1.65 1.65 0 00.33-1.82l.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l-.06.06a1.65 1.65 0 00-.33 1.82z"/></svg>`,
+};
+
+const formatTimeAgo = (timestamp: string) => {
+	const now = new Date();
+	const date = new Date(timestamp);
+	const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
+	
+	if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+	if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+	return `${Math.floor(diffInMinutes / 1440)}d ago`;
+};
+---
+
+<div class="bg-white rounded-3xl shadow-card p-6 md:p-8 border border-gray-100">
+	<div class="flex items-center justify-between mb-6">
+		<div>
+			<h3 class="text-lg font-heading font-semibold text-gray-900">Recent Activity</h3>
+			<p class="text-sm text-gray-500 mt-1">Real-time system updates</p>
+		</div>
+		<div class="flex items-center gap-2">
+			<div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+			<span class="text-xs text-green-600 font-medium">Live</span>
+		</div>
+	</div>
+	
+	{activities.length > 0 ? (
+		<div class="space-y-1">
+			{activities.slice(0, maxItems).map((activity, index) => {
+				const style = typeStyles[activity.type] || typeStyles.system;
+				const IconSvg = typeIcons[style.icon as keyof typeof typeIcons];
+				
+				return (
+					<div class="group flex items-start gap-4 p-3 rounded-xl hover:bg-beige-50 transition-all border border-transparent hover:border-gray-100">
+						<!-- Icon -->
+						<div class={`w-10 h-10 rounded-xl ${style.bg} flex items-center justify-center flex-shrink-0`}>
+							<div class={style.text}>
+								{IconSvg}
+							</div>
+						</div>
+						
+						<!-- Content -->
+						<div class="flex-1 min-w-0">
+							<div class="flex items-center gap-2 flex-wrap">
+								<p class="text-sm text-gray-900">
+									<strong>{activity.user.name}</strong> {activity.action}
+								</p>
+								{activity.target && (
+									<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+										{activity.target}
+									</span>
+								)}
+							</div>
+							<p class="text-xs text-gray-500 mt-0.5">
+								{activity.details || activity.timestamp ? formatTimeAgo(activity.timestamp) : ''}
+							</p>
+						</div>
+						
+						<!-- Time -->
+						<span class="text-xs text-gray-400 flex-shrink-0">
+							{formatTimeAgo(activity.timestamp)}
+						</span>
+					</div>
+				);
+			})}
+		</div>
+	) : (
+		<div class="text-center py-12">
+			<div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-beige-100 flex items-center justify-center">
+				<svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+				</svg>
+			</div>
+			<p class="text-sm text-gray-500">No recent activity</p>
+		</div>
+	)}
+</div>

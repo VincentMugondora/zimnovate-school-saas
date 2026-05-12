@@ -1,0 +1,78 @@
+---
+export interface Props {
+	value: number; // 0-100
+	label?: string;
+	showLabel?: boolean;
+	color?: 'teal' | 'cyan' | 'orange' | 'blue' | 'green' | 'red';
+	size?: 'sm' | 'md' | 'lg';
+	showPercentage?: boolean;
+	animated?: boolean;
+	class?: string;
+}
+
+const { 
+	value, 
+	label, 
+	showLabel = true, 
+	color = 'teal', 
+	size = 'md', 
+	showPercentage = true,
+	animated = true,
+	className 
+} = Astro.props;
+
+const normalizedValue = Math.min(100, Math.max(0, value));
+
+const colorClasses = {
+	teal: 'bg-teal-500',
+	cyan: 'bg-cyan-500',
+	orange: 'bg-orange-500',
+	blue: 'bg-blue-500',
+	green: 'bg-green-500',
+	red: 'bg-red-500',
+};
+
+const sizeClasses = {
+	sm: 'h-1.5',
+	md: 'h-2.5',
+	lg: 'h-4',
+};
+
+const bgColorClass = colorClasses[color];
+const sizeClass = sizeClasses[size];
+---
+
+<div class={`w-full ${className || ''}`}>
+	{(label || showLabel) && (
+		<div class="flex justify-between items-center mb-2">
+			{label && <span class="text-sm font-medium text-gray-700">{label}</span>}
+			{showPercentage && (
+				<span class="text-sm font-semibold text-gray-900">{normalizedValue}%</span>
+			)}
+		</div>
+	)}
+	
+	<div class={`w-full bg-gray-100 rounded-full overflow-hidden ${sizeClass}`}>
+		<div 
+			class={`${bgColorClass} ${animated ? 'transition-all duration-1000 ease-out' : ''} h-full rounded-full relative`}
+			style={`width: ${animated ? '0%' : normalizedValue + '%'}`}
+			data-width={`${normalizedValue}%`}
+		>
+			<!-- Glossy overlay -->
+			<div class="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent"></div>
+		</div>
+	</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+	const bars = document.querySelectorAll('[data-width]');
+	bars.forEach((bar) => {
+		if (bar.classList.contains('transition-all')) {
+			setTimeout(() => {
+				bar.style.width = bar.getAttribute('data-width');
+			}, 100);
+		}
+	});
+});
+</script>
